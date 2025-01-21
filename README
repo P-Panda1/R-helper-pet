@@ -1,0 +1,1 @@
+This is a research helper pet project. The aim of this project is to take a paper and isolate the jargons used in the paper to extract the wikipages relevant to it. Based on this wiki dataset, we aim to create a RAG based system that will help us answer questions based on the paper.
