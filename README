@@ -1,1 +1,5 @@
-This is a research helper pet project. The aim of this project is to take a paper and isolate the jargons used in the paper to extract the wikipages relevant to it. Based on this wiki dataset, we aim to create a RAG based system that will help us answer questions based on the paper.
+# History Helper - Local History Assistant
+
+This is a desktop application that serves as an intelligent history assistant, running entirely locally using CPU-based inference with local LLM models.
+
+See README.md for full documentation and QUICKSTART.md for installation instructions.
