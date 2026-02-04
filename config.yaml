@@ -1,0 +1,55 @@
+# Application Configuration
+
+llm:
+  model_path: "models/history-llm.gguf"  # Will be downloaded from Hugging Face
+  model_name: "mistral-7b-instruct-v0.2"  # CPU-optimized model
+  n_ctx: 4096  # Context window
+  n_threads: 4  # CPU threads
+  temperature: 0.7
+  top_p: 0.9
+  max_tokens: 1024
+
+embedding:
+  model_name: "sentence-transformers/all-MiniLM-L6-v2"
+  batch_size: 32
+  device: "cpu"
+
+vector_store:
+  type: "qdrant"  # or "milvus"
+  host: "localhost"
+  port: 6333
+  collection_name: "history_knowledge_base"
+  dimension: 384  # all-MiniLM-L6-v2 dimension
+  similarity_threshold: 0.7
+
+agents:
+  query_analyzer:
+    max_keywords: 5
+    min_keywords: 3
+  
+  information_gatherer:
+    max_urls_per_keyword: 10
+    top_n_urls: 5
+    crawl_timeout: 30
+    max_concurrent_crawls: 5
+  
+  answer_synthesizer:
+    top_k_chunks: 5
+    max_context_length: 3000
+
+crawling:
+  user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  timeout: 30
+  max_retries: 3
+  cache_enabled: true
+  cache_ttl_days: 7
+
+evaluation:
+  rouge_types: ["rouge1", "rouge2", "rougeL"]
+  precision_at_k: [1, 3, 5]
+
+ui:
+  window_width: 1200
+  window_height: 800
+  theme: "light"
+
