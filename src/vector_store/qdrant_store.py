@@ -128,26 +128,80 @@ class QdrantVectorStore:
                 if conditions:
                     query_filter = Filter(must=conditions)
             
-            results = self.client.search(
-                collection_name=self.collection_name,
-                query_vector=query_embedding,
-                limit=top_k,
-                query_filter=query_filter,
-                score_threshold=score_threshold or self.config.vector_store.similarity_threshold
-            )
+            # Qdrant client API - try different methods based on version
+            # Use the simplest API that works: search with query_vector
+            results = None
+            last_error = None
+            
+            # Try standard search method first (most common API)
+            if hasattr(self.client, 'search'):
+                try:
+                    results = self.client.search(
+                        collection_name=self.collection_name,
+                        query_vector=query_embedding,
+                        limit=top_k,
+                        query_filter=query_filter,
+                        score_threshold=score_threshold or self.config.vector_store.similarity_threshold
+                    )
+                except Exception as e:
+                    last_error = e
+                    logger.debug(f"search method failed: {e}")
+                    results = None
+            
+            # Try search_points (alternative API)
+            if results is None and hasattr(self.client, 'search_points'):
+                try:
+                    results = self.client.search_points(
+                        collection_name=self.collection_name,
+                        query_vector=query_embedding,
+                        limit=top_k,
+                        query_filter=query_filter,
+                        score_threshold=score_threshold or self.config.vector_store.similarity_threshold
+                    )
+                except Exception as e:
+                    last_error = e
+                    logger.debug(f"search_points failed: {e}")
+                    results = None
+            
+            # If still no results, raise error
+            if results is None:
+                error_msg = f"All Qdrant search methods failed. Last error: {last_error}"
+                logger.error(error_msg)
+                raise RuntimeError(error_msg)
             
             documents = []
             for result in results:
+                # Handle different result types
+                if hasattr(result, 'id'):
+                    result_id = result.id
+                    result_score = getattr(result, 'score', 0.0)
+                    result_payload = getattr(result, 'payload', {})
+                elif isinstance(result, dict):
+                    result_id = result.get('id', '')
+                    result_score = result.get('score', 0.0)
+                    result_payload = result.get('payload', {})
+                else:
+                    # Try to access as object
+                    result_id = getattr(result, 'id', '')
+                    result_score = getattr(result, 'score', 0.0)
+                    result_payload = getattr(result, 'payload', {})
+                
+                # Handle payload as dict or object
+                if not isinstance(result_payload, dict):
+                    result_payload = result_payload.__dict__ if hasattr(result_payload, '__dict__') else {}
+                
                 documents.append({
-                    "id": result.id,
-                    "text": result.payload.get("text", ""),
-                    "score": result.score,
-                    "metadata": {k: v for k, v in result.payload.items() if k != "text"}
+                    "id": result_id,
+                    "text": result_payload.get("text", ""),
+                    "score": result_score,
+                    "metadata": {k: v for k, v in result_payload.items() if k != "text"}
                 })
             
             return documents
         except Exception as e:
             logger.error(f"Search error: {e}")
+            import traceback
+            logger.debug(traceback.format_exc())
             raise
     
     def delete_collection(self):

@@ -32,10 +32,19 @@ class InformationGathererAgent:
             
             for keyword in keywords:
                 logger.info(f"Searching for keyword: {keyword}")
+                # Try search with just the keyword first (more likely to get results)
+                search_query = keyword
                 results = self.web_search.search(
-                    query=f"{keyword} history",
+                    query=search_query,
                     num_results=self.config.agents.information_gatherer.get("max_urls_per_keyword", 10)
                 )
+                # If no results, try with "history" appended
+                if not results:
+                    logger.info(f"No results for '{keyword}', trying with 'history' suffix...")
+                    results = self.web_search.search(
+                        query=f"{keyword} history",
+                        num_results=self.config.agents.information_gatherer.get("max_urls_per_keyword", 10)
+                    )
                 search_results[keyword] = results
                 urls = [r["url"] for r in results[:self.config.agents.information_gatherer.get("top_n_urls", 5)]]
                 all_urls.extend(urls)

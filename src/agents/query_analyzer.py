@@ -26,7 +26,18 @@ Consider:
 - Temporal relationships (before/after, during)
 - Geographic context if relevant
 
-Return ONLY a JSON array of keywords, nothing else. Example format: ["keyword1", "keyword2", "keyword3"]"""
+Return ONLY a JSON array of keywords, nothing else. Example format: ["keyword1", "keyword2", "keyword3"]
+
+Example:
+Question: What was the capital of the Roman Empire in the 1st century AD?
+Keywords: ["Roman Empire Capitals", "Roman Empire 1st century AD", "Capital Cities", "Roman Empire History", "Roman Empire Geography"]
+
+Question: How did the Industrial Revolution impact the economy of the United States?
+Keywords: ["Industrial Revolution Impact", "Economic Impact", "United States Economy", "Industrial Revolution History", "Industrial Revolution Economics"]
+
+Question: How did World War II start?
+Keywords: ["World War II Start", "World War II History", "World War II Causes", "World War II Timeline", "World War II Events"]
+"""
     
     def analyze(self, question: str) -> Dict[str, Any]:
         """Analyze question and extract keywords."""
